@@ -1,0 +1,88 @@
+### Step 1: Set Up the Environment
+
+1.  Ensure Python and Pip are Installed:
+      
+    sudo apt update
+    sudo apt install python3 python3-pip
+      
+
+2.  Install Scapy:
+      
+    sudo pip3 install scapy
+      
+
+### Step 2: Sniffer Code using `vi`
+
+1.  Create the Python Script :
+      
+    vi sniffer.py
+      
+
+
+from scapy.all import sniff, IP, TCP, UDP, ICMP, wrpcap
+
+# List to store captured packets
+captured_packets = []
+
+def packet_callback(packet):
+    if IP in packet:
+        captured_packets.append(packet)
+        ip_src = packet[IP].src
+        ip_dst = packet[IP].dst
+        protocol = packet[IP].proto
+        
+        if protocol == 6 and TCP in packet:  # TCP protocol
+            tcp_sport = packet[TCP].sport
+            tcp_dport = packet[TCP].dport
+            print(f"TCP Packet: {ip_src}:{tcp_sport} -> {ip_dst}:{tcp_dport}")
+        
+        elif protocol == 17 and UDP in packet:  # UDP protocol
+            udp_sport = packet[UDP].sport
+            udp_dport = packet[UDP].dport
+            print(f"UDP Packet: {ip_src}:{udp_sport} -> {ip_dst}:{udp_dport}")
+        
+        elif protocol == 1:  # ICMP protocol
+            print(f"ICMP Packet: {ip_src} -> {ip_dst}")
+        
+        else:
+            print(f"Other IP Packet: {ip_src} -> {ip_dst} (Protocol: {protocol})")
+    else:
+        print("Non-IP packet detected")
+
+# Start sniffing
+sniff(prn=packet_callback, count=50)  # Increase count for more packets
+
+# Save the captured packets to a file
+wrpcap('captured_packets.pcap', captured_packets)
+  
+
+
+Step 3: Run the Sniffer
+
+1.  Make the Script Executable :
+      
+    chmod +x sniffer.py
+      
+
+2.  Run the Script with Root Privileges :
+      
+    sudo python3 sniffer.py
+      
+
+This script will capture 50 packets and save them to a file named `captured_packets.pcap`.
+
+### Step 4: Analyze Captured Packets
+
+1.  Install Wireshark  (if not already installed):
+      
+    sudo apt install wireshark
+      
+
+2.  Open the Captured Packets in Wireshark :
+    - Launch Wireshark and open the `captured_packets.pcap` file to analyze the packets.
+
+### Step 5: Prepare Submission
+
+1.  Compress the Files :
+      
+    zip sniffer_assignment.zip sniffer.py captured_packets.pcap
